@@ -1,0 +1,19 @@
+@import url(http://fonts.googleapis.com/css?family=Share+Tech&text=Kkindlify);
+
+.logo {
+  font-family: 'Share Tech', sans-serif;
+}
+
+.preview-kindle {
+  background: url(../img/kindle4.png) no-repeat;
+  width: 430px;
+  height: 627px;
+  padding-top: 60px;
+  padding-left: 42px;
+  margin: 10px;
+}
+
+.preview-kindle img {
+  width: 345px;
+  height: 460px;
+}

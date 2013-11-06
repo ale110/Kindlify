@@ -1,0 +1,119 @@
+<html>
+<head>
+  <title>Kindlify</title>
+  <script src="js/toolbox-base/interface.js" type="text/javascript"></script>
+  <script src="//code.jquery.com/jquery-2.0.3.min.js" type="text/javascript"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-jcrop/0.9.12/js/jquery.Jcrop.min.js" type="text/javascript"></script>
+  <script src="js/crop.js" type="text/javascript"></script>
+  <script src="js/kindlify.js" type="text/javascript"></script>
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jquery-jcrop/0.9.12/css/jquery.Jcrop.min.css">
+  <link href='css/bootstrap.min.css' rel='stylesheet' type='text/css'>
+  <link href='css/style.css' rel='stylesheet' type='text/css'>
+</head>
+<body>
+
+<div class="container">
+  <h1 class="logo">Kindlify</h1>
+
+  <div id="selectScr">
+    <p>Kindlify converts your images to Kindle and/or Nook Classic screensavers. To get started, select image: </p>
+    <p><input type="file" id="fileInput"></p>
+    <p class="secondary">Powered by <a href="http://manuels.github.io/unix-toolbox.js/">emscriptened ImageMagick</a></p>
+    <p class="secondary">by <a href="http://ale.incrowd.ws/">Ale</a> | Fork me on <a href="https://github.com/ale110/Kindlify">Github</a></p>
+  </div>
+  <div id="resizeScr" style="display: none;">
+    <p>We need to crop your image. Please draw a box around your favourite place on this picture: </p>
+    <p><img src="" id="resizeImg" style="max-width: 100%; max-height: 800px;"></p>
+    <!--<p class="secondary">Right now cropping might be a bit unaccurate. I'm going to wix it in a week or two.</p>-->
+    <p><button id="resizeBtn" class="btn">Go!</button></p>
+  </div>
+  <div id="processingScr" style="display: none;">
+    <h1>Please wait...</h1>
+    <p>Your picture is being converted. It usually takes less than 30 seconds. </p>
+  </div>
+  <div id="doneScr" style="display: none;">
+    <div class="row">
+      <div class="col-md-6">
+        <p><a href="#" id="downloadLink" class="btn btn-primary">Download</a></p>
+        <p>To install it on Kindle you will need <a href="http://wiki.mobileread.com/wiki/Kindle_Screen_Saver_Hack_for_all_2.x,_3.x_%26_4.x_Kindles">Kindle Screensaver hack</a>, available on all 2.x, 3.x and 4.x Kindles. </p>
+        <p>On Nook you just drop it to <code>/my screensavers</code> directory, as <a href="http://nookdevs.com/Tips_and_tricks#Wallpaper_.26_Screensavers">nookDevs wiki suggests</a>. </p>
+      </div>
+
+      <div class="col-md-6">
+        <div class="preview-kindle">
+          <img src="" id="resultImg" class="result-img">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  selectScr = document.getElementById("selectScr");
+  fileInput = document.getElementById("fileInput");
+
+  resizeScr = document.getElementById("resizeScr");
+  resizeImg = document.getElementById("resizeImg");
+  resizeBtn = document.getElementById("resizeBtn");
+
+  processingScr = document.getElementById("processingScr");
+
+  doneScr = document.getElementById("doneScr");
+  downloadLink = document.getElementById("downloadLink");
+  resultImg = document.getElementById("resultImg");
+
+  fileInput.addEventListener('change', function() {
+    var file = fileInput.files[0];
+    if (file) {
+      selectScr.style.display = "none";
+      resizeScr.style.display = "block";
+
+      resizeImg.src = URL.createObjectURL(file);
+      resizeImg.onload = function() {
+        window.cropObj = $.Jcrop(document.getElementById("resizeImg"), {
+          aspectRatio: 6/8
+        });
+      };
+    }
+  });
+
+  resizeBtn.addEventListener('click', function() {
+    function dataURItoBlob(d) {
+      return window.atob(d.split(',')[1]);
+    };
+
+    $resizeImg = $(resizeImg);
+
+    coords = cropObj.tellSelect();
+    natCoords = {
+      x: Math.floor(coords.x * (resizeImg.naturalWidth / $resizeImg.width())),
+      y: Math.floor(coords.y * (resizeImg.naturalHeight / $resizeImg.height())),
+      w: Math.floor(coords.w * (resizeImg.naturalWidth / $resizeImg.width())),
+      h: Math.floor(coords.h * (resizeImg.naturalHeight / $resizeImg.height())),
+    }
+    crop(document.getElementById("resizeImg").src,
+      natCoords.x, natCoords.y,
+      natCoords.w, natCoords.h,
+      600, 800,
+      function(img) {
+        processingScr.style.display = "block";
+        resizeScr.style.display = "none";
+        kindlify(dataURItoBlob(img), function(res) {
+          resultImg.src = "data:image/png;base64," + window.btoa(res);
+          downloadLink.href = "data:image/png;base64," + window.btoa(res);
+          downloadLink.download = "kindlified.png";
+          processingScr.style.display = "none";
+          doneScr.style.display = "block";
+        });
+      });
+  });
+</script>
+
+<!-- Yandex.Metrika counter -->
+<script src="//mc.yandex.ru/metrika/watch.js" type="text/javascript"></script>
+<script type="text/javascript">
+try {
+  var yaCounter22833997 = new Ya.Metrika({id:22833997});
+} catch(e) {}
+</script>
+<noscript><div><img src="//mc.yandex.ru/watch/22833997" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
